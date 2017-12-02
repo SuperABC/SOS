@@ -14,27 +14,44 @@ void sgLoop() {
 	int key;
 
 	if (first) {
-		regProc(desktopInit, desktopKey);
+		regProc("desktop", desktopInit, desktopKey, desktopLoop);
 		first = 0;
 	}
 
 	if (biosKey(1)) {
 		key = biosKey(0);
 
-		if (process[procActive].keyFunc(key))return;
-
-		for (int i = 0; i < procNum&&i != procActive; i++) {
-			process[i].keyFunc(key);
-		}
+		if (!process[0].keyFunc(key))
+			if (procActive != 0)process[procActive].keyFunc(key);
+	}
+	for (int i = 0; i < procNum; i++) {
+		process[i].loop();
 	}
 	return;
 }
 
-void regProc(void (*init)(), int (*func)(int key)) {
+void regProc(char *name, void (*init)(), int (*func)(int key), void (*loop)()) {
+
+	for (int i = 0; i < procNum; i++) {
+		if (strcmp(name, process[i].name) == 0) {
+			return;
+		}
+	}
 	init();
 
 	procActive = procNum;
 
 	process[procNum].id = procNum;
-	process[procNum++].keyFunc = func;
+	process[procNum].name = name;
+	process[procNum].keyFunc = func;
+	process[procNum++].loop = loop;
 }
+void disProc() {
+	for (int i = procActive; i < procNum; i++) {
+		process[i].id = process[i + 1].id;
+		process[i].keyFunc = process[i + 1].keyFunc;
+	}
+	procNum--;
+	procActive--;
+}
+
