@@ -8,9 +8,12 @@
 
 struct proc {
 	int id;
+	char *name;
 	int(*keyFunc)(int key);
+	void(*loop)();
 };
 
-void regProc(void(*init)(), int(*func)(int key));
+void regProc(char *name, void(*init)(), int(*func)(int key), void(*loop)());
+void disProc();
 
 #endif
