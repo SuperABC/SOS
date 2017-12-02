@@ -4,6 +4,7 @@
 
 void desktopInit();
 int desktopKey(int key);
+void desktopLoop();
 
 void backGround();
 void startList();
