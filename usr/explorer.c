@@ -23,13 +23,8 @@ void explorer(){
 	clearMem();
 	explorerBackground();
 	
-	kernel_setcolor(BLACK, LIGHTGRAY);
-	kernel_puts_at("                                        ", dirX, dirY);
-	kernel_puts_at(tmpDir, dirX, dirY);
-
 	refreshDir();
 	showDir();
-	sidePanel();
 
     while(1){
         explorerKey(kernel_getkey());
@@ -52,6 +47,7 @@ void explorerBackground(){
 	kernel_setcolor(BLACK, WHITE);
 	kernel_puts_at("Explorer                                                    ", 10, 3);
 
+	kernel_strcpy(tmpDir, "/");
 	kernel_setcolor(BROWN, LIGHTGRAY);
 	kernel_puts_at("                                        ", dirX, dirY);
 	kernel_puts_at(tmpDir, dirX, dirY);
@@ -117,9 +113,10 @@ void explorerKey(int k){
 	}
 	else if(k=='\r'||k=='\n'){
 		if(itemList[itemSelected].type == IT_FOLDER){
+			if(tmpDir[kernel_strlen(tmpDir)-1]!='/')
+				tmpDir[kernel_strlen(tmpDir)] = '/';
 			kernel_strcpy(tmpDir + kernel_strlen(tmpDir),
 				itemList[itemSelected].name);
-			tmpDir[kernel_strlen(tmpDir)] = '/';
 			tmpDir[kernel_strlen(tmpDir)+1] = 0;
 
 			clearMem();
@@ -130,7 +127,6 @@ void explorerKey(int k){
 
 			refreshDir();
 			showDir();
-			sidePanel();
 		}
 		else if(itemList[itemSelected].type == IT_TXT){
 			turbo(tmpDir, itemList[itemSelected].name);
@@ -149,7 +145,7 @@ void explorerKey(int k){
 	else if(k==0x08){
 		if(kernel_strcmp(tmpDir, "/")==0)return;
 
-		int end = kernel_strlen(tmpDir)-2;
+		int end = kernel_strlen(tmpDir)-1;
 		while(tmpDir[end]!='/')end--;
 		tmpDir[end+1] = '\0';
 
@@ -201,6 +197,10 @@ readdir:
         if (-1 != r) {
 			get_filename((unsigned char *)&entry, name);
 			if (entry.attr == 0x10) {
+				if(kernel_strcmp(name, ".")==0)
+					goto readdir;
+				if(kernel_strcmp(name, "..")==0)
+					goto readdir;
 				kernel_strcpy(itemList[idx].name, name);
 				itemList[idx].type = IT_FOLDER;
 				itemList[idx].size = 0;
@@ -220,10 +220,19 @@ readdir:
 			
 			goto readdir;
         }
-    }
+	}
 }
 void showDir(){
 	int tmp = startIdx;
+
+	kernel_setcolor(BROWN, LIGHTGRAY);
+	for (int i = expBaseY; i < expBaseY+expSizeY; i++) {
+		for (int j = expBaseX; j < expBaseX+expSizeX; j++) {
+			kernel_putch_at(' ', j, i);
+		}
+	}
+	sidePanel();
+
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 5; j++){
 			if(tmp == maxIdx)return;
@@ -296,9 +305,9 @@ void showDir(){
 			}
 			
 			if(tmp==itemSelected)
-				kernel_setcolor(BLACK, LIGHTGRAY);
-			else
 				kernel_setcolor(RED, LIGHTGRAY);
+			else
+				kernel_setcolor(BLACK, LIGHTGRAY);
 
 			if(kernel_strlen(itemList[tmp].name)<7){
 				kernel_puts_at(itemList[tmp].name, 
@@ -324,10 +333,9 @@ void sidePanel(){
 
 	kernel_setcolor(BLACK, LIGHTGRAY);
 	kernel_puts_at("File Name:", 54, 12);
-	kernel_puts_at("File Type:", 54, 16);
-	kernel_puts_at("File Size:", 54, 18);
-	kernel_puts_at("Last Fetch:", 54, 20);
-	kernel_puts_at("Privilige:", 54, 23);
+	kernel_puts_at("File Type:", 54, 15);
+	kernel_puts_at("File Size:", 54, 17);
+	kernel_puts_at("Last Fetch:", 54, 19);
 
 	if(startIdx>=maxIdx)return;
 
@@ -351,21 +359,21 @@ void sidePanel(){
 
 	switch(itemList[itemSelected].type){
 		case IT_FOLDER:
-			kernel_puts_at("Folder", 54, 17);
+			kernel_puts_at("Folder", 54, 16);
 			break;
 		case IT_TXT:
-			kernel_puts_at("Text File", 54, 17);
+			kernel_puts_at("Text File", 54, 16);
 			break;
 		case IT_BIN:
-			kernel_puts_at("Binary File", 54, 17);
+			kernel_puts_at("Binary File", 54, 16);
 			break;
 		case IT_OTHER:
-			kernel_puts_at("Unknown File", 54, 17);
+			kernel_puts_at("Unknown File", 54, 16);
 			break;
 	}
 	
-	kernel_putnum_at(itemList[itemSelected].size, 54, 19);
-	kernel_putch_at('B', 63, 19);
+	kernel_putnum_at(itemList[itemSelected].size, 54, 18);
+	kernel_putch_at('B', 63, 18);
 
 }
 void closeExplorer(){
