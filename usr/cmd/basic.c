@@ -77,6 +77,9 @@ void delay(char *c){
 	while(sum--);
 	kfree(c);
 }
+void echo(char *c){
+	terminalPrint(c, terminalCurX, terminalCurY);
+}
 void nocmd() {
     terminalPrint(inst, terminalCurX, terminalCurY);
 	terminalPrint(" is not a command or a executable program.", terminalCurX, terminalCurY);

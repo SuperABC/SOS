@@ -204,10 +204,11 @@ void interpreteCmd(){
     
     char *insturction = cmdInst(inst);
 
-    if (kernel_strcmp(inst, "exit") == 0)closeTerminal();
-    else if (kernel_strcmp(inst, "clear") == 0)clear();
-    else if (kernel_strcmp(inst, "version") == 0)version();
-    else if (kernel_strcmp(inst, "sleep") == 0)delay(cmdPara(inst));
+    if (kernel_strcmp(insturction, "exit") == 0)closeTerminal();
+    else if (kernel_strcmp(insturction, "clear") == 0)clear();
+    else if (kernel_strcmp(insturction, "version") == 0)version();
+    else if (kernel_strcmp(insturction, "sleep") == 0)delay(cmdPara(inst));
+    else if (kernel_strcmp(insturction, "echo") == 0)echo(cmdPara(inst));
 	else nocmd(); 
 }
 void closeTerminal(){

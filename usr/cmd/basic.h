@@ -4,6 +4,7 @@
 void clear();
 void version();
 void delay(char *c);
+void echo(char *c);
 void nocmd();
 
 #endif

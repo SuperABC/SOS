@@ -19,6 +19,8 @@ char *wholeTxt;
 int fileSize;
 char turboCont[22][60] = {0};
 
+int insertCtrl = 0;
+
 void turbo(char *dir, char *filename){
     turboSwitch = 1;
     turboBackground();
@@ -27,11 +29,6 @@ void turbo(char *dir, char *filename){
     cursor_col = turboBaseX;
     cursor_freq = 31;
     kernel_set_cursor();
-
-    while(1){
-        turboKey(kernel_getkey());
-        if(turboSwitch == 0)break;
-    }
 
     char path[64];
     kernel_strcpy(path, dir);
@@ -52,6 +49,11 @@ void turbo(char *dir, char *filename){
         if(turboTmpY == turboSizeY)break;
     }
     turboTmpX = turboTmpY = 0;
+
+    while(1){
+        turboKey(kernel_getkey());
+        if(turboSwitch == 0)break;
+    }
     
 }
 void turboBackground(){
@@ -66,6 +68,9 @@ void turboBackground(){
 
 }
 void turboKey(int k){
+    if(k==0x14){
+        insertCtrl = 1-insertCtrl;
+    }
     k = kernel_scantoascii(k);
     
     operateEvent(k);
@@ -85,13 +90,18 @@ void operateEvent(int ch){
         operateEvent(' ');
     }
     if(ch >= 0x20 && ch < 0x80){
-        kernel_putch_at(ch, turboTmpX, turboTmpY);
+        kernel_putch_at(ch, turboBaseX + turboTmpX, turboBaseY + turboTmpY);
         turboTmpX++;
         if(turboTmpX==turboSizeX){
             turboTmpX = 0;
             turboTmpY++;
         }
     }
+
+    cursor_row = turboBaseY + turboTmpX;
+    cursor_col = turboBaseX + turboTmpY;
+    kernel_set_cursor();
+
 }
 void closeTurbo(){
     for(int i = 0; i < 29; i++){
