@@ -5,7 +5,8 @@ void turbo(char *dir, char *filename);
 void turboBackground();
 void turboKey(int k);
 
-void operateEvent(int ch);
+void operateIns(int ch);
+void operateCtrl(int ch);
 void closeTurbo();
 
 #endif
