@@ -157,19 +157,16 @@ void explorerKey(int k){
 
 		refreshDir();
 		showDir();
-		sidePanel();
 	}
 	else if(k=='r'){//remove.
 		char path[64];
 		kernel_strcpy(path, tmpDir);
 		kernel_strcat(path, itemList[itemSelected].name);
 		fs_rm(path);
-	}
-	else if(k=='m'){//move
 
-	}
-	else if(k=='c'){//copy
-
+		refreshDir();
+		if(itemSelected>=maxIdx)itemSelected = maxIdx-1;
+		showDir();
 	}
 	else if(k=='n'){//rename
 
