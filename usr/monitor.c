@@ -27,6 +27,9 @@ void monitorBackground(){
 	kernel_puts_at("      Progress      ", 20, 5);
 	kernel_setcolor(BLACK, LIGHTGRAY);
 	kernel_puts_at("       Memory       ", 40, 5);
+
+    kernel_setcolor(BLACK, LIGHTGRAY);
+    kernel_puts_at("PID    PNAME       PARENT     TIME   STATE  ", 19, 7);
 }
 void monitorKey(int k){
     k = kernel_scantoascii(k);
