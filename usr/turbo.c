@@ -11,7 +11,7 @@ extern int cursor_col;
 extern int cursor_freq;
 
 const int turboBaseX = 10, turboBaseY = 4;
-const int turboSizeX = 60, turboSizeY = 22;
+const int turboSizeX = 60, turboSizeY = 21;
 int turboTmpX = 0, turboTmpY = 0;
 
 FILE cat_file;
@@ -32,11 +32,19 @@ void turbo(char *dir, char *filename){
 
     char path[64];
     kernel_strcpy(path, dir);
+    if(kernel_strlen(path) > 1)kernel_strcat(path, "/");
     kernel_strcat(path, filename);
 
     if (0 == fs_open(&cat_file, path)) {
         fileSize = get_entry_filesize(cat_file.entry.data);
-        wholeTxt = (char *)kmalloc(fileSize + 1);
+        if(fileSize < 1024)
+            wholeTxt = (char *)kmalloc(4096 + 1);
+        else if(fileSize < 4096)
+            wholeTxt = (char *)kmalloc(16384 + 1);
+        else if(fileSize < 16384)
+            wholeTxt = (char *)kmalloc(65536 + 1);
+        else 
+            wholeTxt = (char *)kmalloc(262144 + 1);
         fs_read(&cat_file, wholeTxt, fileSize);
         wholeTxt[fileSize] = 0;
         fs_close(&cat_file);
@@ -45,10 +53,13 @@ void turbo(char *dir, char *filename){
     int idx = 0;
     kernel_setcolor(YELLOW, RED);
     for(int i = 0; i < fileSize; i++){
-        operateEvent(wholeTxt[idx++]);
+        operateIns(wholeTxt[idx++]);
         if(turboTmpY == turboSizeY)break;
     }
     turboTmpX = turboTmpY = 0;
+    cursor_row = turboBaseY + turboTmpX;
+    cursor_col = turboBaseX + turboTmpY;
+    kernel_set_cursor();
 
     while(1){
         turboKey(kernel_getkey());
@@ -66,17 +77,28 @@ void turboBackground(){
 	kernel_setcolor(BLACK, WHITE);
 	kernel_puts_at("Turbo editor                                                ", 10, 3);
 
+    kernel_setcolor(BROWN, RED);
+    kernel_puts_at("--INSERT--", 60, 25);
 }
 void turboKey(int k){
     if(k==0x14){
         insertCtrl = 1-insertCtrl;
+        kernel_setcolor(BROWN, RED);
+        if(insertCtrl==0)
+            kernel_puts_at("--INSERT--", 60, 25);
+        else
+            kernel_puts_at(" --CTRL-- ", 60, 25);
+	    kernel_setcolor(YELLOW, RED);
     }
     k = kernel_scantoascii(k);
     
-    operateEvent(k);
+    if(insertCtrl==0)
+        operateIns(k);
+    else
+        operateCtrl(k);
 }
 
-void operateEvent(int ch){
+void operateIns(int ch){
     kernel_setcolor(YELLOW, RED);
     
     if(ch == '\n' || ch == '\r'){
@@ -84,10 +106,7 @@ void operateEvent(int ch){
         turboTmpY++;
     }
     if(ch == '\t'){
-        operateEvent(' ');
-        operateEvent(' ');
-        operateEvent(' ');
-        operateEvent(' ');
+        operateIns(' ');
     }
     if(ch >= 0x20 && ch < 0x80){
         kernel_putch_at(ch, turboBaseX + turboTmpX, turboBaseY + turboTmpY);
@@ -102,6 +121,24 @@ void operateEvent(int ch){
     cursor_col = turboBaseX + turboTmpY;
     kernel_set_cursor();
 
+}
+void operateCtrl(int ch){
+    if(ch=='q')closeTurbo();
+}
+void rollTurbo(){
+	char c;
+    kernel_setcolor(YELLOW, RED);
+	for (int i = 1; i < turboSizeY; i++) {
+		for (int j = 0; j < turboSizeX; j++) {
+            c = turboCont[i][j];
+			kernel_putch_at(c, turboBaseX + j, turboBaseY + i - 1);
+            turboCont[i-1][j] = c;
+		}
+	}
+	for (int i = 0; i < turboSizeX; i++) {
+		kernel_putch_at(' ', turboBaseX + i, turboBaseY + turboSizeY - 1);
+        turboCont[turboSizeY-1][i] = ' ';
+	}
 }
 void closeTurbo(){
     for(int i = 0; i < 29; i++){
