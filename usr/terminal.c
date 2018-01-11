@@ -1,5 +1,6 @@
 #include "terminal.h"
 #include "cmd/basic.h"
+#include "cmd/ls.h"
 #include <driver/ps2.h>
 #include <driver/vga.h>
 #include <zjunix/fs/fat.h>
@@ -135,7 +136,23 @@ void terminalKey(int k){
 }
 
 void terminalPrint(char *s, int x, int y){
-	if (kernel_strlen(s) < terminalSizeX - x) {
+    if (s[0] == '\n'){
+        if(terminalCurY<terminalSizeY-1){
+            terminalCurX = 0;
+            terminalCurY++;
+        }
+        else {
+            terminalCurX = 0;
+            rollScrn();
+        }
+
+        cursor_col = terminalBaseX + terminalCurX;
+        cursor_row = terminalBaseY + terminalCurY;
+        cursor_freq = 31;
+        kernel_set_cursor();
+        terminalPrint(s+1, terminalCurX, terminalCurY);
+    }
+	else if (kernel_strlen(s) < terminalSizeX - x) {
         kernel_puts_at(s, terminalBaseX + x, terminalBaseY + y);
         for(int i = 0; i < kernel_strlen(s); i++){
             terminalCont[x+i][y] = s[i];
@@ -208,6 +225,7 @@ void interpreteCmd(){
     else if (kernel_strcmp(insturction, "clear") == 0)clear();
     else if (kernel_strcmp(insturction, "version") == 0)version();
     else if (kernel_strcmp(insturction, "sleep") == 0)delay(cmdPara(inst));
+    else if (kernel_strcmp(insturction, "ls") == 0)ls(cmdPara(inst));
     else if (kernel_strcmp(insturction, "echo") == 0)echo(cmdPara(inst));
 	else nocmd(); 
 }
