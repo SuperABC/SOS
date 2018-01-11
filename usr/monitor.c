@@ -1,4 +1,5 @@
 #include "monitor.h"
+#include <zjunix/pc.h>
 #include <driver/ps2.h>
 #include <driver/vga.h>
 
@@ -7,6 +8,7 @@ int monitorSwitch = 0;
 void monitor(){
     monitorSwitch = 1;
     monitorBackground();
+    refreshProc();
 
     while(1){
         monitorKey(kernel_getkey());
@@ -29,12 +31,34 @@ void monitorBackground(){
 	kernel_puts_at("       Memory       ", 40, 5);
 
     kernel_setcolor(BLACK, LIGHTGRAY);
-    kernel_puts_at("PID    PNAME       PARENT     TIME   STATE  ", 19, 7);
+    kernel_puts_at("PID PNAME       PARENT      TIME     STATE  ", 18, 7);
 }
 void monitorKey(int k){
     k = kernel_scantoascii(k);
 
 	if(k=='q')closeMonitor();
+    if(k=='p'){
+        kernel_setcolor(WHITE, RED);
+        kernel_puts_at("      Progress      ", 20, 5);
+        kernel_setcolor(BLACK, LIGHTGRAY);
+        kernel_puts_at("       Memory       ", 40, 5);
+
+        kernel_setcolor(BLACK, LIGHTGRAY);
+        kernel_puts_at("PID PNAME       PARENT      TIME     STATE  ", 18, 7);
+
+        refreshProc();
+    }
+    if(k=='m'){
+        kernel_setcolor(BLACK, LIGHTGRAY);
+        kernel_puts_at("      Progress      ", 20, 5);
+        kernel_setcolor(WHITE, RED);
+        kernel_puts_at("       Memory       ", 40, 5);
+
+        kernel_setcolor(BLACK, LIGHTGRAY);
+        kernel_puts_at("PID PNAME       MEMORY                      ", 18, 7);
+
+        refreshMemory();
+    }
 }
 
 void closeMonitor(){
@@ -44,4 +68,39 @@ void closeMonitor(){
         }
     }
     monitorSwitch = 0;
+}
+void refreshProc(){
+    kernel_setcolor(BLACK, LIGHTGRAY);
+    for(int i = 18; i < 62; i++){
+        for(int j = 8; j < 24; j++){
+            kernel_putch_at(' ', i, j);
+        }
+    }
+
+    int num = get_pc_num();
+    kernel_putnum_at(num, 0, 0);
+    for(int i = 0; i < num; i++){
+        task_struct *tmp = get_pcb(i);
+        kernel_putnum_at(tmp->ASID, 19, 8+i);
+        kernel_puts_at(tmp->name, 23, 8+i);
+        kernel_puts_at(get_pcb(tmp->parent)->name, 35, 8+i);
+    }
+}
+void refreshMemory(){
+    kernel_setcolor(BLACK, LIGHTGRAY);
+    for(int i = 18; i < 62; i++){
+        for(int j = 8; j < 24; j++){
+            kernel_putch_at(' ', i, j);
+        }
+    }
+    
+    int num = get_pc_num();
+    for(int i = 0; i < num; i++){
+        task_struct *tmp = get_pcb(i);
+        //int mem = get_pc_mem(i);
+        int mem = 0;
+        kernel_putnum_at(tmp->ASID, 19, 8+i);
+        kernel_puts_at(tmp->name, 23, 8+i);
+        kernel_putnum_at(mem, 35, 8+i);
+    }
 }
