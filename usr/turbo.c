@@ -15,6 +15,7 @@ const int turboSizeX = 60, turboSizeY = 21;
 int turboTmpX = 0, turboTmpY = 0;
 
 FILE cat_file;
+char *fileName;
 char *wholeTxt;
 int fileSize;
 char turboCont[22][60] = {0};
@@ -34,6 +35,8 @@ void turbo(char *dir, char *filename){
     kernel_strcpy(path, dir);
     if(kernel_strlen(path) > 1)kernel_strcat(path, "/");
     kernel_strcat(path, filename);
+
+    kernel_strcpy(fileName, path);
 
     if (0 == fs_open(&cat_file, path)) {
         fileSize = get_entry_filesize(cat_file.entry.data);
@@ -117,13 +120,14 @@ void operateIns(int ch){
         }
     }
 
-    cursor_row = turboBaseY + turboTmpX;
-    cursor_col = turboBaseX + turboTmpY;
+    cursor_row = turboBaseY + turboTmpY;
+    cursor_col = turboBaseX + turboTmpX;
     kernel_set_cursor();
 
 }
 void operateCtrl(int ch){
     if(ch=='q')closeTurbo();
+    if(ch=='s')saveText();
 }
 void rollTurbo(){
 	char c;
@@ -149,4 +153,16 @@ void closeTurbo(){
     turboSwitch = 0;
 
     kfree(wholeTxt);
+
+    cursor_freq = 0;
+    kernel_set_cursor();
+}
+
+void saveText(){
+    FILE file;
+
+    fs_open(&file, fileName);
+    fs_lseek(&file, 0);
+    fs_write(&file, wholeTxt, fileSize);
+    int ret = fs_close(&file);
 }
