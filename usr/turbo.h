@@ -9,4 +9,6 @@ void operateIns(int ch);
 void operateCtrl(int ch);
 void closeTurbo();
 
+void saveText();
+
 #endif
