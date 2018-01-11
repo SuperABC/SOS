@@ -6,5 +6,7 @@ void monitorBackground();
 void monitorKey(int k);
 
 void closeMonitor();
+void refreshProc();
+void refreshMemory();
 
 #endif
