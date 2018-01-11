@@ -171,11 +171,23 @@ void explorerKey(int k){
 	else if(k=='n'){//rename
 
 	}
-	else if(k=='/'){//new folder
-
-	}
 	else if(k=='.'){//new file
+		char path[64];
+		kernel_strcpy(path, tmpDir);
+		kernel_strcat(path, "file.txt");
 
+		fs_create(path);
+		refreshDir();
+		showDir();
+	}
+	else if(k=='/'){//new folder
+		char path[64];
+		kernel_strcpy(path, tmpDir);
+		kernel_strcat(path, "folder");
+
+		fs_mkdir(path);
+		refreshDir();
+		showDir();
 	}
 }
 
