@@ -1,8 +1,6 @@
 #ifndef _ZJUNIX_PC_H
 #define _ZJUNIX_PC_H
 
-#include <zjunix/list.h>
-
 //task state
 #define _TASK_UNINIT 0
 #define _TASK_READY 1
@@ -31,18 +29,11 @@ typedef struct {
     unsigned int counter;
     char name[32];
     unsigned long start_time;
-    //updated
-    unsigned int user_stack;
-    unsigned int user_code;
+     //updated
     unsigned int parent;
-    unsigned int state;
-    struct list_head sched;//用于连接到调度链表
-	struct list_head node;//用于连接到进程链表
-
-	//struct list_head stack_vma_head;
-	//struct list_head user_vma_head;// user code/static data
-	//struct list_head heap_vma_head;
-
+    unsigned int state; 
+    //struct list_head sched;//用于连接到调度链表
+	//struct list_head node;//用于连接到进程链表
 } task_struct;
 
 typedef union {
@@ -54,11 +45,25 @@ typedef union {
 
 void init_pc();
 void pc_schedule(unsigned int status, unsigned int cause, context* pt_context);
-int pc_peek();
+int pc_peek();//unsigned int get_emptypid();
 void pc_create(int asid, void (*func)(), unsigned int init_sp, unsigned int init_gp, char* name);
 void pc_kill_syscall(unsigned int status, unsigned int cause, context* pt_context);
 int pc_kill(int proc);
 task_struct* get_curr_pcb();
 int print_proc();
+
+//update
+int fork(void (*func), char* name);
+int do_fork(char* name);
+void copy_mem(int pid, char* name);
+void *memcpy(void *dest, void *src, unsigned int len);
+
+//for moniter
+task_struct* get_pcb(int pid);
+int get_pc_num();
+int get_curr_pid();
+
+//schedule
+int queue_peek(int queue_0);
 
 #endif  // !_ZJUNIX_PC_H
