@@ -1,4 +1,5 @@
 #include "monitor.h"
+#include <zjunix/slab.h>
 #include <zjunix/pc.h>
 #include <driver/ps2.h>
 #include <driver/vga.h>
@@ -31,7 +32,7 @@ void monitorBackground(){
 	kernel_puts_at("       Memory       ", 40, 5);
 
     kernel_setcolor(BLACK, LIGHTGRAY);
-    kernel_puts_at("PID PNAME       PARENT      TIME     STATE  ", 18, 7);
+    kernel_puts_at("PID PNAME       PARENT       QUEUE1  QUEUE2 ", 18, 7);
 }
 void monitorKey(int k){
     k = kernel_scantoascii(k);
@@ -44,7 +45,7 @@ void monitorKey(int k){
         kernel_puts_at("       Memory       ", 40, 5);
 
         kernel_setcolor(BLACK, LIGHTGRAY);
-        kernel_puts_at("PID PNAME       PARENT      TIME     STATE  ", 18, 7);
+        kernel_puts_at("PID PNAME       PARENT       QUEUE1  QUEUE2 ", 18, 7);
 
         refreshProc();
     }
@@ -78,12 +79,14 @@ void refreshProc(){
     }
 
     int num = get_pc_num();
-    kernel_putnum_at(num, 0, 0);
     for(int i = 0; i < num; i++){
         task_struct *tmp = get_pcb(i);
         kernel_putnum_at(tmp->ASID, 19, 8+i);
         kernel_puts_at(tmp->name, 23, 8+i);
         kernel_puts_at(get_pcb(tmp->parent)->name, 35, 8+i);
+        
+        kernel_putnum_at(tmp->queue_0, 48, 8+i);
+        kernel_putnum_at(tmp->queue_1, 54, 8+i);
     }
 }
 void refreshMemory(){
@@ -97,8 +100,7 @@ void refreshMemory(){
     int num = get_pc_num();
     for(int i = 0; i < num; i++){
         task_struct *tmp = get_pcb(i);
-        //int mem = get_pc_mem(i);
-        int mem = 0;
+        int mem = get_proc_mem(i);
         kernel_putnum_at(tmp->ASID, 19, 8+i);
         kernel_puts_at(tmp->name, 23, 8+i);
         kernel_putnum_at(mem, 35, 8+i);
