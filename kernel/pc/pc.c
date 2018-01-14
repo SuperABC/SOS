@@ -67,6 +67,8 @@ void init_pc() {
     pcb[0].counter = PROC_DEFAULT_TIMESLOTS;
     kernel_strcpy(pcb[0].name, "init");
     pcb[0].parent = 0;
+    pcb[0].queue_0 = 2;
+    pcb[0].queue_1 = 0;
     pcb[0].state = _TASK_RUNNING;
 
     curr_proc = 0;
@@ -131,11 +133,43 @@ void pc_schedule_2(unsigned int status, unsigned int cause, context* pt_context)
     pcb[curr_proc].state = _TASK_RUNNING;
     asm volatile("mtc0 $zero, $9\n\t");
 }
-
+void pc_schedule_1(unsigned int status, unsigned int cause, context* pt_context)
+{
+    int i;
+    int temp_current;
+    for (i = curr_queue_1 + 1 ; i < MAX_PID; i++) {
+        if (queue[curr_queue_0][i] >= 0)
+        {
+            temp_current = queue[curr_queue_0][i];
+            break;
+        }
+    }
+    int new_queue_1;
+    if (i == MAX_PID) {
+        new_queue_1 = queue_peek(curr_queue_0+1);
+        pcb[curr_proc].queue_0++;
+        queue[curr_queue_0 + 1][new_queue_1] = curr_proc;
+        curr_queue_0++;
+        curr_queue_1 = new_queue_1;
+        pc_schedule(status, cause, pt_context);
+        return;
+    }
+    // Save context
+    copy_context(pt_context, &(pcb[curr_proc].context));
+    pcb[curr_proc].state = _TASK_READY;
+    curr_proc = temp_current;
+    // Load context
+    copy_context(&(pcb[curr_proc].context), pt_context);
+    pcb[curr_proc].state = _TASK_RUNNING;
+    asm volatile("mtc0 $zero, $9\n\t");
+}
 void pc_schedule(unsigned int status, unsigned int cause, context* pt_context)
 {
     int i,j;
-    pc_schedule_2(status,cause,pt_context);
+    if(curr_queue_0 != 2)
+        pc_schedule_1(status,cause,pt_context);
+    else
+        pc_schedule_2(status,cause,pt_context);
 }
 
 int pc_peek() {
@@ -157,8 +191,7 @@ void pc_create(int asid, void (*func)(), unsigned int init_sp, unsigned int init
     pcb[asid].context.gp = init_gp;
     kernel_strcpy(pcb[asid].name, name);
     pcb[asid].ASID = asid;
-    
-    pcb[asid].state = _TASK_RUNNING;
+    pcb[asid].queue_0 = 2;
     
     int queue_1 = queue_peek(2);
     if( queue_1 == -1)
@@ -168,7 +201,9 @@ void pc_create(int asid, void (*func)(), unsigned int init_sp, unsigned int init
     queue[2][queue_1] = asid;
     curr_queue_0 = 2;
     curr_queue_1 = queue_1;
-    
+    pcb[asid].queue_1 = queue_1;
+
+    pcb[asid].state = _TASK_RUNNING;
 }
 
 void pc_kill_syscall(unsigned int status, unsigned int cause, context* pt_context) {
@@ -195,16 +230,16 @@ task_struct* get_curr_pcb() {
 
 int print_proc() {
     int i;
-    kernel_puts("PID name\n", 0xfff, 0);
+    kernel_puts("PID name queue_0 queue_1\n", 0xfff, 0);
     for (i = 0; i < MAX_PID; i++) {
         if (pcb[i].ASID >= 0)
-            kernel_printf(" %x  %s\n", pcb[i].ASID, pcb[i].name);
+            kernel_printf(" %x  %s  %d  %d\n", pcb[i].ASID, pcb[i].name, pcb[i].queue_0, pcb[i].queue_1);
     }
     return 0;
 }
 
 //mine !!!
-int fork(void (*func), char* name)
+int fork(void (*func), char* name, int queue_0)
 {
     int asid = pc_peek();
     if (asid < 0) {
@@ -226,17 +261,19 @@ int fork(void (*func), char* name)
     pcb[asid].context.gp = init_gp;
     kernel_strcpy(pcb[asid].name, name);
     pcb[asid].ASID = asid;
+    pcb[asid].queue_0 = queue_0;
     
     pcb[asid].state = _TASK_RUNNING;
 
-    int queue_1 = queue_peek(2);
+    int queue_1 = queue_peek(queue_0);
     if( queue_1 == -1)
     {
         kernel_puts("Failed to allocate queue\n", 0xfff, 0);
     }
-    queue[2][queue_1] = asid;
-    curr_queue_0 = 2;
+    queue[queue_0][queue_1] = asid;
+    curr_queue_0 = queue_0;
     curr_queue_1 = queue_1;
+    pcb[asid].queue_1 = queue_1;
 
     return 0;
 }
@@ -322,4 +359,19 @@ int queue_peek(int queue_0)
     if (i == MAX_PID)
         return -1;
     return i;
+}
+
+void exit()
+{
+    void pc_kill_syscall(unsigned int status, unsigned int cause, context* pt_context) {
+    if (curr_proc != 0) {
+        pcb[curr_proc].ASID = -1;
+        pc_schedule(status, cause, pt_context);
+    }
+}
+}
+
+int get_curr_queue_0()
+{
+    return curr_queue_0;
 }
