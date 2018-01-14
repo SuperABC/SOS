@@ -16,6 +16,8 @@ struct itemUi itemList[64];
 unsigned int startIdx = 0;
 unsigned int maxIdx = 0;
 
+char cpySrc[64] = {0};
+
 int itemSelected = 0;
 
 void explorer(){
@@ -186,6 +188,23 @@ void explorerKey(int k){
 		kernel_strcat(path, "folder");
 
 		fs_mkdir(path);
+		refreshDir();
+		showDir();
+	}
+	else if(k=='c'){
+		kernel_strcpy(cpySrc, tmpDir);
+		kernel_strcat(cpySrc, itemList[itemSelected].name);
+	}
+	else if(k=='p'){
+		char cpyDest[64];
+		kernel_strcpy(cpyDest, tmpDir);
+		kernel_strcat(cpyDest, "/");
+
+		int idx = kernel_strlen(cpySrc)-1;
+		while(idx>0&&cpySrc[idx]!='/')idx--;
+		kernel_strcat(cpyDest, cpySrc+idx+1);
+		
+		fs_mv(cpySrc, cpyDest);
 		refreshDir();
 		showDir();
 	}
@@ -383,6 +402,8 @@ void sidePanel(){
 	
 	kernel_putnum_at(itemList[itemSelected].size, 54, 18);
 	kernel_putch_at('B', 63, 18);
+
+	
 
 }
 void closeExplorer(){
