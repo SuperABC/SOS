@@ -15,6 +15,8 @@
 int started = 0;
 int selected = 0;
 
+extern int monitorSwitch;
+
 void desktop(){
     kernel_printf("Press any key to enter desktop.\n");
     kernel_getchar();
