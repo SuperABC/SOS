@@ -59,8 +59,8 @@ u32 fs_mv(u8 *src, u8 *dest) {
         mk_dir_buf[i] = mk_dir.entry.data[i];
 
     /* new path */
-    for (i = 0; i < 11; i++)
-        mk_dir_buf[i] = filename11[i];
+    //for (i = 0; i < 11; i++)
+      //  mk_dir_buf[i] = filename11[i];
 
     if (fs_open(&file_create, dest) == 1)
         goto fs_mv_err;
