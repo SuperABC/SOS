@@ -85,3 +85,15 @@ void nocmd() {
 	terminalPrint(" is not a command or a executable program.", terminalCurX, terminalCurY);
 	finishLine();
 }
+void ps(){
+    /*int i;
+    kernel_puts_at("PID name queue_0 queue_1\n", terminalCurX, terminalCurY);
+    for (i = 0; i < get_pc_num; i++) {
+        if (pcb[i].ASID >= 0){
+			kernel_put_num()
+		}
+            kernel_printf(" %x  %s  %d  %d\n", pcb[i].ASID, pcb[i].name, pcb[i].queue_0, pcb[i].queue_1);
+    }
+    return 0;*/
+}
+
