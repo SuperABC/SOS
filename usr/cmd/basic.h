@@ -6,5 +6,6 @@ void version();
 void delay(char *c);
 void echo(char *c);
 void nocmd();
+void ps();
 
 #endif
