@@ -29,9 +29,10 @@ typedef struct {
     unsigned int counter;
     char name[32];
     unsigned long start_time;
-     //updated
     unsigned int parent;
     unsigned int state; 
+    int queue_0;
+    int queue_1;
     //struct list_head sched;//用于连接到调度链表
 	//struct list_head node;//用于连接到进程链表
 } task_struct;
@@ -53,7 +54,7 @@ task_struct* get_curr_pcb();
 int print_proc();
 
 //update
-int fork(void (*func), char* name);
+int fork(void (*func), char* name, int queue_0);
 int do_fork(char* name);
 void copy_mem(int pid, char* name);
 void *memcpy(void *dest, void *src, unsigned int len);
@@ -65,5 +66,6 @@ int get_curr_pid();
 
 //schedule
 int queue_peek(int queue_0);
+int get_curr_queue_0();
 
 #endif  // !_ZJUNIX_PC_H
