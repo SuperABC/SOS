@@ -41,13 +41,9 @@ void turbo(char *dir, char *filename){
     if (0 == fs_open(&cat_file, path)) {
         fileSize = get_entry_filesize(cat_file.entry.data);
         if(fileSize < 1024)
-            wholeTxt = (char *)kmalloc(4096 + 1);
-        else if(fileSize < 4096)
-            wholeTxt = (char *)kmalloc(16384 + 1);
-        else if(fileSize < 16384)
-            wholeTxt = (char *)kmalloc(65536 + 1);
+            wholeTxt = (char *)kmalloc(2048 + 1);
         else 
-            wholeTxt = (char *)kmalloc(262144 + 1);
+            wholeTxt = (char *)kmalloc(4096 + 1);
         fs_read(&cat_file, wholeTxt, fileSize);
         wholeTxt[fileSize] = 0;
         fs_close(&cat_file);
