@@ -19,10 +19,10 @@ extern int monitorSwitch;
 
 void desktop(){
     kernel_printf("Press any key to enter desktop.\n");
-    kernel_getchar();
-    desktopBackground();
+    kernel_getchar();//Enter desktop.
+    desktopBackground();//Draw the graphic background.
     while(1){
-        desktopKey(kernel_getkey());
+        desktopKey(kernel_getkey());//Respons for input.
     }
 }
 void desktopBackground(){
@@ -41,104 +41,64 @@ void desktopBackground(){
     kernel_putchar_at('t', WHITE, BLACK, 29, 4);
 }
 void desktopKey(int k){
-    unsigned int new_id;
-    
 	if (started == 0) {
-		if (k == 0x14) {
-			startList();
+		if (k == 0x14) {//Ctrl
+			startList();//Open start list.
 		}
 	}
 	else {
-		if (k == 0x14) {
-			clearStart();
+		if (k == 0x14) {//Ctrl
+			clearStart();//Close start list.
         }
-        k = kernel_scantoascii(k);
+        k = kernel_scantoascii(k);//Change k to ascii.
 
 		if (k == 'j' || k == 'J') {
-			changeSelect(0);
+			changeSelect(0);//Move down
 		}
 		if (k == 'k' || k == 'K') {
-			changeSelect(1);
+			changeSelect(1);//Move up.
         }
         
 		if (k == '\r' || k == '\n') {
 			if (selected == 0);
 			else {
-				clearStart();
+				clearStart();//If enter, clear start list first.
 				if (selected == 1) {
-                    /*new_id = fork();
-                    if(new_id!=0) {
-                        return;
-                    }*/
+                    //Not implement yet.
 				}
 				if (selected == 3) {
-                    /*new_id = fork();
-                    if(new_id!=0) {
-                        return;
-                    }*/
+                    //Not implement yet.
 				}
 				if (selected == 4) {
-                    /*new_id = fork();
-                    if(new_id!=0) {
-                        return;
-                    }*/
-                    terminal();
+                    terminal();//Open comman line.
                 }
 				if (selected == 5) {
-                    /*new_id = fork();
-                    if(new_id!=0) {
-                        return;
-                    }*/
-                    explorer();
+                    explorer();//Open explorer.
                 }
 				if (selected == 6) {
-                    /*new_id = fork();
-                    if(new_id!=0) {
-                        return;
-                    }*/
-                    monitor();
+                    monitor();//Open monitor.
                 }
 			}
         }
         
-		if (k == 'o' || k == 'O');
-		if (k == 'l' || k == 'L') {
-			clearStart();
-            /*new_id = fork();
-            if(new_id!=0) {
-                return;
-            }*/
+		if (k == 'o' || k == 'O');//O is shortcut for turn off.
+		if (k == 'l' || k == 'L') {//L is shortcut for login.
+			clearStart();//Not implement yet.
 		}
-		if (k == 's' || k == 'S') {
-			clearStart();
-            /*new_id = fork();
-            if(new_id!=0) {
-                return;
-            }*/
+		if (k == 's' || k == 'S') {//S is shortcut for setting.
+			clearStart();//Not implement yet.
 		}
-		if (k == 't' || k == 'T') {
+		if (k == 't' || k == 'T') {//T is shortcut for terminal.
 			clearStart();
-            /*new_id = fork();
-            if(new_id!=0) {
-                return;
-            }*/
-            terminal();
+            terminal();//Open comman line.
 		}
-		if (k == 'e' || k == 'E') {
+		if (k == 'e' || k == 'E') {//E is shrotcut for explorer.
 			clearStart();
-            /*new_id = fork();
-            if(new_id!=0) {
-                return;
-            }*/
-            explorer();
+            explorer();//Open explorer.
 		}
-		if (k == 'm' || k == 'M') {
+		if (k == 'm' || k == 'M') {//M is shortcut for monitor.
 			clearStart();
-            /*new_id = fork();
-            if(new_id!=0) {
-                return;
-            }*/
-            monitor();
+            monitor();//Open monitor.
 		}
 	}
 }
