@@ -1,2 +1,2 @@
 # SOS
-Super OS extending ZJUNIX.
+Super Operating System extending ZJUNIX.
